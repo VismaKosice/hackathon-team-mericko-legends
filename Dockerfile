@@ -5,9 +5,6 @@ WORKDIR /src
 # Copy project file
 COPY src/PensionCalculationEngine.Api/PensionCalculationEngine.Api.csproj ./src/PensionCalculationEngine.Api/
 
-# Restore dependencies
-RUN dotnet restore src/PensionCalculationEngine.Api/PensionCalculationEngine.Api.csproj
-
 # Copy the rest of the source code
 COPY src/ ./src/
 
@@ -15,7 +12,7 @@ COPY src/ ./src/
 RUN dotnet publish src/PensionCalculationEngine.Api/PensionCalculationEngine.Api.csproj \
     -c Release \
     -o /app/publish \
-    --no-restore \
+    -r linux-x64 \
     /p:PublishTrimmed=false \
     /p:PublishSingleFile=false \
     /p:PublishReadyToRun=true \
