@@ -9,17 +9,14 @@ public sealed class CalculationEngine
 {
     private readonly MutationRegistry _mutationRegistry;
     private readonly JsonPatchGenerator? _patchGenerator;
-    private readonly bool _generatePatches;
 
     public CalculationEngine(MutationRegistry mutationRegistry, JsonPatchGenerator? patchGenerator = null)
     {
         _mutationRegistry = mutationRegistry;
         _patchGenerator = patchGenerator;
-        // Only generate patches if explicitly enabled via environment variable or if generator provided
-        _generatePatches = Environment.GetEnvironmentVariable("ENABLE_JSON_PATCH")?.ToLower() == "true" || patchGenerator != null;
     }
 
-    public CalculationResponse ProcessCalculationRequest(CalculationRequest request)
+    public async Task<CalculationResponse> ProcessCalculationRequestAsync(CalculationRequest request, CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow; // Cache to avoid multiple calls
         var calculationId = Guid.NewGuid().ToString();
@@ -67,8 +64,8 @@ public sealed class CalculationEngine
             }
 
             // Store previous situation for patch generation (only if needed)
-            var previousSituation = _generatePatches ? currentSituation : null;
-            var result = mutationHandler.Execute(currentSituation, mutation);
+            var previousSituation = _patchGenerator != null ? currentSituation : null;
+            var result = await mutationHandler.ExecuteAsync(currentSituation, mutation, cancellationToken);
             
             // Assign message IDs and track indexes
             var messageIndexes = new List<int>(capacity: result.Messages.Count);
@@ -94,22 +91,28 @@ public sealed class CalculationEngine
             {
                 outcome = StringPool.Failure;
                 // Don't update currentSituation for failed mutation, no patch needed
-                processedMutations.Add(new ProcessedMutation(mutation, messageIndexes, null));
+                processedMutations.Add(new ProcessedMutation(mutation, messageIndexes, null, null));
                 break;
             }
 
             // Update situation for successful mutation
             currentSituation = result.UpdatedSituation;
             
-            // Generate forward patch only if enabled
-            List<object>? patchOperations = null;
-            if (_generatePatches && _patchGenerator != null && previousSituation != null)
+            // Generate forward and backward patches if generator is available
+            List<object>? forwardPatch = null;
+            List<object>? backwardPatch = null;
+            
+            if (_patchGenerator != null && previousSituation != null)
             {
-                var forwardPatch = _patchGenerator.GeneratePatch(previousSituation, currentSituation);
-                patchOperations = forwardPatch.Cast<object>().ToList();
+                var forwardOps = _patchGenerator.GeneratePatch(previousSituation, currentSituation);
+                forwardPatch = forwardOps.Cast<object>().ToList();
+                
+                // Generate backward patch (reverse direction)
+                var backwardOps = _patchGenerator.GeneratePatch(currentSituation, previousSituation);
+                backwardPatch = backwardOps.Cast<object>().ToList();
             }
             
-            processedMutations.Add(new ProcessedMutation(mutation, messageIndexes, patchOperations));
+            processedMutations.Add(new ProcessedMutation(mutation, messageIndexes, forwardPatch, backwardPatch));
             
             lastSuccessfulMutationId = mutation.MutationId;
             lastSuccessfulMutationIndex = mutationIndex;

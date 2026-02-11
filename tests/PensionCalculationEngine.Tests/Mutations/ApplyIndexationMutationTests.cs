@@ -10,7 +10,7 @@ public class ApplyIndexationMutationTests
     private readonly ApplyIndexationMutation _mutation = new();
 
     [Fact]
-    public void Execute_WithNoFilters_AppliesIndexationToAllPolicies()
+    public async Task Execute_WithNoFilters_AppliesIndexationToAllPolicies()
     {
         // Arrange
         var dossier = new Dossier(
@@ -40,7 +40,7 @@ public class ApplyIndexationMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.UpdatedSituation.Dossier!.Policies[0].Salary.Should().Be(51500); // 50000 * 1.03
@@ -48,7 +48,7 @@ public class ApplyIndexationMutationTests
     }
 
     [Fact]
-    public void Execute_WithSchemeIdFilter_AppliesOnlyToMatchingPolicies()
+    public async Task Execute_WithSchemeIdFilter_AppliesOnlyToMatchingPolicies()
     {
         // Arrange
         var dossier = new Dossier(
@@ -80,7 +80,7 @@ public class ApplyIndexationMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.UpdatedSituation.Dossier!.Policies[0].Salary.Should().Be(51500);
@@ -88,7 +88,7 @@ public class ApplyIndexationMutationTests
     }
 
     [Fact]
-    public void Execute_WithEffectiveBeforeFilter_AppliesOnlyToPoliciesBeforeDate()
+    public async Task Execute_WithEffectiveBeforeFilter_AppliesOnlyToPoliciesBeforeDate()
     {
         // Arrange
         var dossier = new Dossier(
@@ -120,7 +120,7 @@ public class ApplyIndexationMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.UpdatedSituation.Dossier!.Policies[0].Salary.Should().Be(51500);
@@ -128,7 +128,7 @@ public class ApplyIndexationMutationTests
     }
 
     [Fact]
-    public void Execute_WithNegativePercentage_ClampsSalaryToZero()
+    public async Task Execute_WithNegativePercentage_ClampsSalaryToZero()
     {
         // Arrange
         var dossier = new Dossier(
@@ -158,7 +158,7 @@ public class ApplyIndexationMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.UpdatedSituation.Dossier!.Policies[0].Salary.Should().Be(0);

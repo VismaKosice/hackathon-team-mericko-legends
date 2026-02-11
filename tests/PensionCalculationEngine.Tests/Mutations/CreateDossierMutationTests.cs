@@ -10,7 +10,7 @@ public class CreateDossierMutationTests
     private readonly CreateDossierMutation _mutation = new();
 
     [Fact]
-    public void Execute_WithValidData_CreatesDossier()
+    public async Task Execute_WithValidData_CreatesDossier()
     {
         // Arrange
         var situation = new Situation(null);
@@ -29,7 +29,7 @@ public class CreateDossierMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.UpdatedSituation.Dossier.Should().NotBeNull();
@@ -42,7 +42,7 @@ public class CreateDossierMutationTests
     }
 
     [Fact]
-    public void Execute_WithExistingDossier_ReturnsCriticalError()
+    public async Task Execute_WithExistingDossier_ReturnsCriticalError()
     {
         // Arrange
         var existingDossier = new Dossier(
@@ -68,7 +68,7 @@ public class CreateDossierMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.Messages.Should().HaveCount(1);
@@ -77,7 +77,7 @@ public class CreateDossierMutationTests
     }
 
     [Fact]
-    public void Execute_WithEmptyName_ReturnsCriticalError()
+    public async Task Execute_WithEmptyName_ReturnsCriticalError()
     {
         // Arrange
         var situation = new Situation(null);
@@ -96,7 +96,7 @@ public class CreateDossierMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.Messages.Should().HaveCount(1);

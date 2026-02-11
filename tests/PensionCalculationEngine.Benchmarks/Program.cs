@@ -24,7 +24,8 @@ public class CalculationBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        var registry = new MutationRegistry();
+        var schemeRegistry = new SchemeRegistryService(null);
+        var registry = new MutationRegistry(schemeRegistry);
         var patchGenerator = new JsonPatchGenerator();
         _engine = new CalculationEngine(registry, patchGenerator);
 
@@ -152,13 +153,13 @@ public class CalculationBenchmarks
     [Benchmark]
     public CalculationResponse SimpleRequest()
     {
-        return _engine.ProcessCalculationRequest(_simpleRequest);
+        return _engine.ProcessCalculationRequestAsync(_simpleRequest).GetAwaiter().GetResult();
     }
 
     [Benchmark]
     public CalculationResponse ComplexRequest()
     {
-        return _engine.ProcessCalculationRequest(_complexRequest);
+        return _engine.ProcessCalculationRequestAsync(_complexRequest).GetAwaiter().GetResult();
     }
 
     [Benchmark]
@@ -167,7 +168,7 @@ public class CalculationBenchmarks
         var results = new List<CalculationResponse>(10);
         for (int i = 0; i < 10; i++)
         {
-            results.Add(_engine.ProcessCalculationRequest(_simpleRequest));
+            results.Add(_engine.ProcessCalculationRequestAsync(_simpleRequest).GetAwaiter().GetResult());
         }
         return results;
     }

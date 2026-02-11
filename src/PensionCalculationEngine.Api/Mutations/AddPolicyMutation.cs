@@ -8,7 +8,7 @@ public sealed class AddPolicyMutation : IMutation
 {
     public string MutationName => "add_policy";
 
-    public MutationResult Execute(Situation situation, CalculationMutation mutation)
+    public Task<MutationResult> ExecuteAsync(Situation situation, CalculationMutation mutation, CancellationToken cancellationToken = default)
     {
         var messages = new List<CalculationMessage>(capacity: 2); // Pre-allocate for expected messages
         
@@ -16,7 +16,7 @@ public sealed class AddPolicyMutation : IMutation
         if (situation.Dossier is null)
         {
             messages.Add(new CalculationMessage(0, MessageLevel.Critical, "DOSSIER_NOT_FOUND", "No dossier exists in the situation"));
-            return new MutationResult(situation, messages);
+            return Task.FromResult(new MutationResult(situation, messages));
         }
 
         var props = mutation.MutationProperties;
@@ -31,14 +31,14 @@ public sealed class AddPolicyMutation : IMutation
         if (salary < 0)
         {
             messages.Add(new CalculationMessage(0, MessageLevel.Critical, "INVALID_SALARY", "Salary cannot be negative"));
-            return new MutationResult(situation, messages);
+            return Task.FromResult(new MutationResult(situation, messages));
         }
 
         // Validation: Invalid part_time_factor
         if (partTimeFactor < 0 || partTimeFactor > 1)
         {
             messages.Add(new CalculationMessage(0, MessageLevel.Critical, "INVALID_PART_TIME_FACTOR", "Part-time factor must be between 0 and 1"));
-            return new MutationResult(situation, messages);
+            return Task.FromResult(new MutationResult(situation, messages));
         }
 
         // Check for duplicate policy (same scheme_id and employment_start_date)
@@ -81,6 +81,6 @@ public sealed class AddPolicyMutation : IMutation
         var updatedDossier = situation.Dossier with { Policies = updatedPolicies };
         var updatedSituation = new Situation(updatedDossier);
 
-        return new MutationResult(updatedSituation, messages);
+        return Task.FromResult(new MutationResult(updatedSituation, messages));
     }
 }

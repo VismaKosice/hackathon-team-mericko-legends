@@ -41,7 +41,8 @@ public sealed record SituationSnapshot(
 public sealed record ProcessedMutation(
     [property: JsonPropertyName("mutation")] CalculationMutation Mutation,
     [property: JsonPropertyName("calculation_message_indexes")] List<int> CalculationMessageIndexes,
-    [property: JsonPropertyName("forward_patch_to_situation_after_this_mutation")] List<object>? ForwardPatch = null
+    [property: JsonPropertyName("forward_patch_to_situation_after_this_mutation")] List<object>? ForwardPatch = null,
+    [property: JsonPropertyName("backward_patch_to_previous_situation")] List<object>? BackwardPatch = null
 );
 
 public sealed record ErrorResponse(

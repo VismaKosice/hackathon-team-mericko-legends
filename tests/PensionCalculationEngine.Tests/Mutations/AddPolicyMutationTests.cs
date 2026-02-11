@@ -10,7 +10,7 @@ public class AddPolicyMutationTests
     private readonly AddPolicyMutation _mutation = new();
 
     [Fact]
-    public void Execute_WithValidData_AddsPolicy()
+    public async Task Execute_WithValidData_AddsPolicy()
     {
         // Arrange
         var dossier = new Dossier(
@@ -40,7 +40,7 @@ public class AddPolicyMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.UpdatedSituation.Dossier!.Policies.Should().HaveCount(1);
@@ -51,7 +51,7 @@ public class AddPolicyMutationTests
     }
 
     [Fact]
-    public void Execute_WithoutDossier_ReturnsCriticalError()
+    public async Task Execute_WithoutDossier_ReturnsCriticalError()
     {
         // Arrange
         var situation = new Situation(null);
@@ -71,7 +71,7 @@ public class AddPolicyMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.Messages.Should().HaveCount(1);
@@ -80,7 +80,7 @@ public class AddPolicyMutationTests
     }
 
     [Fact]
-    public void Execute_WithMultiplePolicies_GeneratesSequentialPolicyIds()
+    public async Task Execute_WithMultiplePolicies_GeneratesSequentialPolicyIds()
     {
         // Arrange
         var dossier = new Dossier(
@@ -113,7 +113,7 @@ public class AddPolicyMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.UpdatedSituation.Dossier!.Policies.Should().HaveCount(2);

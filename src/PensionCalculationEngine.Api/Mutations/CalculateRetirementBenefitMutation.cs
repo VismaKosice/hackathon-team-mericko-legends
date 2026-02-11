@@ -6,11 +6,16 @@ namespace PensionCalculationEngine.Api.Mutations;
 
 public sealed class CalculateRetirementBenefitMutation : IMutation
 {
-    private const decimal DefaultAccrualRate = 0.02m;
+    private readonly ISchemeRegistryService _schemeRegistry;
+
+    public CalculateRetirementBenefitMutation(ISchemeRegistryService schemeRegistry)
+    {
+        _schemeRegistry = schemeRegistry;
+    }
 
     public string MutationName => "calculate_retirement_benefit";
 
-    public MutationResult Execute(Situation situation, CalculationMutation mutation)
+    public async Task<MutationResult> ExecuteAsync(Situation situation, CalculationMutation mutation, CancellationToken cancellationToken = default)
     {
         var messages = new List<CalculationMessage>(capacity: 3); // Pre-allocate for expected messages
         
@@ -74,8 +79,20 @@ public sealed class CalculateRetirementBenefitMutation : IMutation
 
         var weightedAvgSalary = totalYears > 0 ? totalWeightedSalary / totalYears : 0;
 
-        // Calculate annual pension
-        var annualPension = weightedAvgSalary * totalYears * DefaultAccrualRate;
+        // Fetch accrual rates for all unique scheme IDs in parallel
+        var uniqueSchemeIds = situation.Dossier.Policies.Select(p => p.SchemeId).Distinct().ToList();
+        var accrualRates = await _schemeRegistry.GetAccrualRatesAsync(uniqueSchemeIds, cancellationToken);
+
+        // Calculate annual pension using scheme-specific accrual rates
+        var annualPension = 0m;
+        for (int i = 0; i < policyCount; i++)
+        {
+            var policy = situation.Dossier.Policies[i];
+            var years = policyYears[policy];
+            var effectiveSalary = policy.Salary * policy.PartTimeFactor;
+            var accrualRate = accrualRates.TryGetValue(policy.SchemeId, out var rate) ? rate : 0.02m;
+            annualPension += effectiveSalary * years * accrualRate;
+        }
 
         // Distribute to policies
         var updatedPolicies = new List<Policy>(capacity: policyCount);

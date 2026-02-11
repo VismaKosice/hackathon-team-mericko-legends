@@ -8,7 +8,7 @@ public sealed class MutationRegistry
 {
     private readonly FrozenDictionary<string, IMutation> _mutations;
 
-    public MutationRegistry()
+    public MutationRegistry(ISchemeRegistryService schemeRegistry)
     {
         // FrozenDictionary provides zero-allocation lookups
         _mutations = new Dictionary<string, IMutation>
@@ -16,8 +16,8 @@ public sealed class MutationRegistry
             ["create_dossier"] = new CreateDossierMutation(),
             ["add_policy"] = new AddPolicyMutation(),
             ["apply_indexation"] = new ApplyIndexationMutation(),
-            ["calculate_retirement_benefit"] = new CalculateRetirementBenefitMutation(),
-            ["project_future_benefits"] = new ProjectFutureBenefitsMutation()
+            ["calculate_retirement_benefit"] = new CalculateRetirementBenefitMutation(schemeRegistry),
+            ["project_future_benefits"] = new ProjectFutureBenefitsMutation(schemeRegistry)
         }.ToFrozenDictionary(StringComparer.Ordinal);
     }
 

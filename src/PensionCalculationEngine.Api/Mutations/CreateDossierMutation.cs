@@ -8,7 +8,7 @@ public sealed class CreateDossierMutation : IMutation
 {
     public string MutationName => "create_dossier";
 
-    public MutationResult Execute(Situation situation, CalculationMutation mutation)
+    public Task<MutationResult> ExecuteAsync(Situation situation, CalculationMutation mutation, CancellationToken cancellationToken = default)
     {
         var messages = new List<CalculationMessage>();
         
@@ -16,7 +16,7 @@ public sealed class CreateDossierMutation : IMutation
         if (situation.Dossier is not null)
         {
             messages.Add(new CalculationMessage(0, MessageLevel.Critical, "DOSSIER_ALREADY_EXISTS", "A dossier already exists in the situation"));
-            return new MutationResult(situation, messages);
+            return Task.FromResult(new MutationResult(situation, messages));
         }
 
         var props = mutation.MutationProperties;
@@ -31,14 +31,14 @@ public sealed class CreateDossierMutation : IMutation
         if (string.IsNullOrWhiteSpace(name))
         {
             messages.Add(new CalculationMessage(0, MessageLevel.Critical, "INVALID_NAME", "Name is empty or blank"));
-            return new MutationResult(situation, messages);
+            return Task.FromResult(new MutationResult(situation, messages));
         }
 
         // Validation: Invalid birth_date
         if (birthDate > DateOnly.FromDateTime(DateTime.UtcNow))
         {
             messages.Add(new CalculationMessage(0, MessageLevel.Critical, "INVALID_BIRTH_DATE", "Birth date is in the future"));
-            return new MutationResult(situation, messages);
+            return Task.FromResult(new MutationResult(situation, messages));
         }
 
         // Create dossier
@@ -52,6 +52,6 @@ public sealed class CreateDossierMutation : IMutation
         );
 
         var updatedSituation = new Situation(dossier);
-        return new MutationResult(updatedSituation, messages);
+        return Task.FromResult(new MutationResult(updatedSituation, messages));
     }
 }

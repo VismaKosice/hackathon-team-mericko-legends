@@ -1,16 +1,23 @@
 using FluentAssertions;
 using PensionCalculationEngine.Api.Domain;
 using PensionCalculationEngine.Api.Mutations;
+using PensionCalculationEngine.Api.Services;
 using Xunit;
 
 namespace PensionCalculationEngine.Tests.Mutations;
 
 public class CalculateRetirementBenefitMutationTests
 {
-    private readonly CalculateRetirementBenefitMutation _mutation = new();
+    private readonly CalculateRetirementBenefitMutation _mutation;
+
+    public CalculateRetirementBenefitMutationTests()
+    {
+        var schemeRegistry = new SchemeRegistryService(null);
+        _mutation = new CalculateRetirementBenefitMutation(schemeRegistry);
+    }
 
     [Fact]
-    public void Execute_WithEligibleAge_CalculatesCorrectPension()
+    public async Task Execute_WithEligibleAge_CalculatesCorrectPension()
     {
         // Arrange
         var dossier = new Dossier(
@@ -41,7 +48,7 @@ public class CalculateRetirementBenefitMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.UpdatedSituation.Dossier!.Status.Should().Be("RETIRED");
@@ -52,7 +59,7 @@ public class CalculateRetirementBenefitMutationTests
     }
 
     [Fact]
-    public void Execute_WithInsufficientAge_ReturnsCriticalError()
+    public async Task Execute_WithInsufficientAge_ReturnsCriticalError()
     {
         // Arrange
         var dossier = new Dossier(
@@ -82,7 +89,7 @@ public class CalculateRetirementBenefitMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.Messages.Should().HaveCount(1);
@@ -91,7 +98,7 @@ public class CalculateRetirementBenefitMutationTests
     }
 
     [Fact]
-    public void Execute_WithRetirementBeforeEmployment_ReturnsWarning()
+    public async Task Execute_WithRetirementBeforeEmployment_ReturnsWarning()
     {
         // Arrange
         var dossier = new Dossier(
@@ -121,7 +128,7 @@ public class CalculateRetirementBenefitMutationTests
         );
 
         // Act
-        var result = _mutation.Execute(situation, mutationData);
+        var result = await _mutation.ExecuteAsync(situation, mutationData);
 
         // Assert
         result.Messages.Should().Contain(m => m.Code == "RETIREMENT_BEFORE_EMPLOYMENT" && m.Level == "WARNING");

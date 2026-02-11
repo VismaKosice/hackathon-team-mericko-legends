@@ -6,7 +6,7 @@ namespace PensionCalculationEngine.Api.Mutations;
 public interface IMutation
 {
     string MutationName { get; }
-    MutationResult Execute(Situation situation, CalculationMutation mutation);
+    Task<MutationResult> ExecuteAsync(Situation situation, CalculationMutation mutation, CancellationToken cancellationToken = default);
 }
 
 public sealed record MutationResult(

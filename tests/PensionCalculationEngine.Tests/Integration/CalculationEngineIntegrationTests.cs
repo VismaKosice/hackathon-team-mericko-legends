@@ -11,13 +11,14 @@ public class CalculationEngineIntegrationTests
 
     public CalculationEngineIntegrationTests()
     {
-        var registry = new MutationRegistry();
+        var schemeRegistry = new SchemeRegistryService(null);
+        var registry = new MutationRegistry(schemeRegistry);
         var patchGenerator = new JsonPatchGenerator();
         _engine = new CalculationEngine(registry, patchGenerator);
     }
 
     [Fact]
-    public void ProcessCalculationRequest_FullScenario_ReturnsCorrectResponse()
+    public async Task ProcessCalculationRequest_FullScenario_ReturnsCorrectResponse()
     {
         // Arrange
         var request = new CalculationRequest(
@@ -68,7 +69,7 @@ public class CalculationEngineIntegrationTests
         );
 
         // Act
-        var response = _engine.ProcessCalculationRequest(request);
+        var response = await _engine.ProcessCalculationRequestAsync(request);
 
         // Assert
         response.CalculationMetadata.CalculationOutcome.Should().Be("SUCCESS");
@@ -81,7 +82,7 @@ public class CalculationEngineIntegrationTests
     }
 
     [Fact]
-    public void ProcessCalculationRequest_WithCriticalError_HaltsProcessing()
+    public async Task ProcessCalculationRequest_WithCriticalError_HaltsProcessing()
     {
         // Arrange
         var request = new CalculationRequest(
@@ -121,7 +122,7 @@ public class CalculationEngineIntegrationTests
         );
 
         // Act
-        var response = _engine.ProcessCalculationRequest(request);
+        var response = await _engine.ProcessCalculationRequestAsync(request);
 
         // Assert
         response.CalculationMetadata.CalculationOutcome.Should().Be("FAILURE");
