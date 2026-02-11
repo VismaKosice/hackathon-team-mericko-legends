@@ -28,7 +28,7 @@ public class CalculateRetirementBenefitMutationTests
             }
         );
         var situation = new Situation(dossier);
-        var mutationData = new DossierMutation(
+        var mutationData = new CalculationMutation(
             "d6666666-6666-6666-6666-666666666666",
             "calculate_retirement_benefit",
             "DOSSIER",
@@ -69,7 +69,7 @@ public class CalculateRetirementBenefitMutationTests
             }
         );
         var situation = new Situation(dossier);
-        var mutationData = new DossierMutation(
+        var mutationData = new CalculationMutation(
             "d6666666-6666-6666-6666-666666666666",
             "calculate_retirement_benefit",
             "DOSSIER",
@@ -108,7 +108,7 @@ public class CalculateRetirementBenefitMutationTests
             }
         );
         var situation = new Situation(dossier);
-        var mutationData = new DossierMutation(
+        var mutationData = new CalculationMutation(
             "d6666666-6666-6666-6666-666666666666",
             "calculate_retirement_benefit",
             "DOSSIER",

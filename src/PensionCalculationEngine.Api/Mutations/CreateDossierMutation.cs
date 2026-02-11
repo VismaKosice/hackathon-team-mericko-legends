@@ -57,33 +57,28 @@ public sealed class CreateDossierMutation : IMutation
 
     private static string GetString(Dictionary<string, object> props, string key)
     {
-        if (props.TryGetValue(key, out var value))
+        if (!props.TryGetValue(key, out var value)) return string.Empty;
+        if (value is JsonElement jsonElement)
         {
-            if (value is JsonElement jsonElement)
-            {
-                return jsonElement.GetString() ?? string.Empty;
-            }
-            return value?.ToString() ?? string.Empty;
+            return jsonElement.GetString() ?? string.Empty;
         }
-        return string.Empty;
+        return value?.ToString() ?? string.Empty;
     }
 
     private static DateOnly GetDate(Dictionary<string, object> props, string key)
     {
-        if (props.TryGetValue(key, out var value))
+        if (!props.TryGetValue(key, out var value)) return DateOnly.MinValue;
+        if (value is JsonElement jsonElement)
         {
-            if (value is JsonElement jsonElement)
-            {
-                return DateOnly.Parse(jsonElement.GetString()!);
-            }
-            if (value is string str)
-            {
-                return DateOnly.Parse(str);
-            }
-            if (value is DateOnly date)
-            {
-                return date;
-            }
+            return DateOnly.Parse(jsonElement.GetString()!);
+        }
+        if (value is string str)
+        {
+            return DateOnly.Parse(str);
+        }
+        if (value is DateOnly date)
+        {
+            return date;
         }
         return DateOnly.MinValue;
     }

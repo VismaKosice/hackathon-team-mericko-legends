@@ -24,7 +24,7 @@ public class CalculationEngineIntegrationTests
             new CalculationInstructions(
                 new List<CalculationMutation>
                 {
-                    new DossierCreationMutation(
+                    new CalculationMutation(
                         "a1111111-1111-1111-1111-111111111111",
                         "create_dossier",
                         "DOSSIER_CREATION",
@@ -37,7 +37,7 @@ public class CalculationEngineIntegrationTests
                             ["birth_date"] = "1960-06-15"
                         }
                     ),
-                    new DossierMutation(
+                    new CalculationMutation(
                         "b4444444-4444-4444-4444-444444444444",
                         "add_policy",
                         "DOSSIER",
@@ -51,7 +51,7 @@ public class CalculationEngineIntegrationTests
                         },
                         "d2222222-2222-2222-2222-222222222222"
                     ),
-                    new DossierMutation(
+                    new CalculationMutation(
                         "c5555555-5555-5555-5555-555555555555",
                         "apply_indexation",
                         "DOSSIER",
@@ -88,7 +88,7 @@ public class CalculationEngineIntegrationTests
             new CalculationInstructions(
                 new List<CalculationMutation>
                 {
-                    new DossierCreationMutation(
+                    new CalculationMutation(
                         "a1111111-1111-1111-1111-111111111111",
                         "create_dossier",
                         "DOSSIER_CREATION",
@@ -101,7 +101,7 @@ public class CalculationEngineIntegrationTests
                             ["birth_date"] = "1960-06-15"
                         }
                     ),
-                    new DossierMutation(
+                    new CalculationMutation(
                         "b4444444-4444-4444-4444-444444444444",
                         "add_policy",
                         "DOSSIER",

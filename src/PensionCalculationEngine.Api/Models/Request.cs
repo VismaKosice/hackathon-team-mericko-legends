@@ -11,27 +11,12 @@ public sealed record CalculationInstructions(
     [property: JsonPropertyName("mutations")] List<CalculationMutation> Mutations
 );
 
-public abstract record CalculationMutation(
+public record CalculationMutation(
     [property: JsonPropertyName("mutation_id")] string MutationId,
     [property: JsonPropertyName("mutation_definition_name")] string MutationDefinitionName,
     [property: JsonPropertyName("mutation_type")] string MutationType,
     [property: JsonPropertyName("actual_at")] DateOnly ActualAt,
-    [property: JsonPropertyName("mutation_properties")] Dictionary<string, object> MutationProperties
+    [property: JsonPropertyName("mutation_properties")] Dictionary<string, object> MutationProperties,
+    [property: JsonPropertyName("dossier_id")] string? DossierId = null
 );
 
-public sealed record DossierCreationMutation(
-    string MutationId,
-    string MutationDefinitionName,
-    string MutationType,
-    DateOnly ActualAt,
-    Dictionary<string, object> MutationProperties
-) : CalculationMutation(MutationId, MutationDefinitionName, MutationType, ActualAt, MutationProperties);
-
-public sealed record DossierMutation(
-    string MutationId,
-    string MutationDefinitionName,
-    string MutationType,
-    DateOnly ActualAt,
-    Dictionary<string, object> MutationProperties,
-    [property: JsonPropertyName("dossier_id")] string DossierId
-) : CalculationMutation(MutationId, MutationDefinitionName, MutationType, ActualAt, MutationProperties);

@@ -33,7 +33,7 @@ public class CalculationBenchmarks
             new CalculationInstructions(
                 new List<CalculationMutation>
                 {
-                    new DossierCreationMutation(
+                    new(
                         "a1111111-1111-1111-1111-111111111111",
                         "create_dossier",
                         "DOSSIER_CREATION",
@@ -46,7 +46,7 @@ public class CalculationBenchmarks
                             ["birth_date"] = "1960-06-15"
                         }
                     ),
-                    new DossierMutation(
+                    new(
                         "b4444444-4444-4444-4444-444444444444",
                         "add_policy",
                         "DOSSIER",
@@ -60,7 +60,7 @@ public class CalculationBenchmarks
                         },
                         "d2222222-2222-2222-2222-222222222222"
                     ),
-                    new DossierMutation(
+                    new(
                         "c5555555-5555-5555-5555-555555555555",
                         "apply_indexation",
                         "DOSSIER",
@@ -78,7 +78,7 @@ public class CalculationBenchmarks
         // Complex request: multiple policies + indexations + retirement
         var complexMutations = new List<CalculationMutation>
         {
-            new DossierCreationMutation(
+            new(
                 "a1111111-1111-1111-1111-111111111111",
                 "create_dossier",
                 "DOSSIER_CREATION",
@@ -96,7 +96,7 @@ public class CalculationBenchmarks
         // Add 10 policies
         for (int i = 0; i < 10; i++)
         {
-            complexMutations.Add(new DossierMutation(
+            complexMutations.Add(new(
                 Guid.NewGuid().ToString(),
                 "add_policy",
                 "DOSSIER",
@@ -115,7 +115,7 @@ public class CalculationBenchmarks
         // Add 5 indexations
         for (int i = 0; i < 5; i++)
         {
-            complexMutations.Add(new DossierMutation(
+            complexMutations.Add(new(
                 Guid.NewGuid().ToString(),
                 "apply_indexation",
                 "DOSSIER",
@@ -130,7 +130,7 @@ public class CalculationBenchmarks
         }
 
         // Add retirement calculation
-        complexMutations.Add(new DossierMutation(
+        complexMutations.Add(new(
             Guid.NewGuid().ToString(),
             "calculate_retirement_benefit",
             "DOSSIER",

@@ -14,7 +14,7 @@ public class CreateDossierMutationTests
     {
         // Arrange
         var situation = new Situation(null);
-        var mutationData = new DossierCreationMutation(
+        var mutationData = new CalculationMutation(
             "a1111111-1111-1111-1111-111111111111",
             "create_dossier",
             "DOSSIER_CREATION",
@@ -53,7 +53,7 @@ public class CreateDossierMutationTests
             new List<Policy>()
         );
         var situation = new Situation(existingDossier);
-        var mutationData = new DossierCreationMutation(
+        var mutationData = new CalculationMutation(
             "a1111111-1111-1111-1111-111111111111",
             "create_dossier",
             "DOSSIER_CREATION",
@@ -81,7 +81,7 @@ public class CreateDossierMutationTests
     {
         // Arrange
         var situation = new Situation(null);
-        var mutationData = new DossierCreationMutation(
+        var mutationData = new CalculationMutation(
             "a1111111-1111-1111-1111-111111111111",
             "create_dossier",
             "DOSSIER_CREATION",

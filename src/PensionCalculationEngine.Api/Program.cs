@@ -10,7 +10,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-    options.SerializerOptions.TypeInfoResolver = AppJsonSerializerContext.Default;
+    // Removed TypeInfoResolver to allow reflection-based serialization for all types
+    // options.SerializerOptions.TypeInfoResolver = AppJsonSerializerContext.Default;
 });
 
 // Register services as singletons for better performance
@@ -20,10 +21,10 @@ builder.Services.AddSingleton<CalculationEngine>();
 var app = builder.Build();
 
 // Health check endpoints
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
+app.MapGet("/health", () => Results.Text("healthy"))
     .WithName("HealthCheck");
 
-app.MapGet("/health/ready", () => Results.Ok(new { status = "ready", timestamp = DateTime.UtcNow }))
+app.MapGet("/health/ready", () => Results.Text("ready"))
     .WithName("ReadinessCheck");
 
 // Main calculation endpoint

@@ -33,6 +33,7 @@ ENV DOTNET_gcServer=1
 ENV DOTNET_gcConcurrent=1
 ENV DOTNET_TieredPGO=1
 ENV DOTNET_ReadyToRun=1
+ENV DOTNET_HillClimbing_Disable=1
 
 # Expose port 8080
 EXPOSE 8080

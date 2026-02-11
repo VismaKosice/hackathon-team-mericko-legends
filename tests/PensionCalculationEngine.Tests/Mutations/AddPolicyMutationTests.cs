@@ -24,7 +24,7 @@ public class AddPolicyMutationTests
             new List<Policy>()
         );
         var situation = new Situation(dossier);
-        var mutationData = new DossierMutation(
+        var mutationData = new CalculationMutation(
             "b4444444-4444-4444-4444-444444444444",
             "add_policy",
             "DOSSIER",
@@ -55,7 +55,7 @@ public class AddPolicyMutationTests
     {
         // Arrange
         var situation = new Situation(null);
-        var mutationData = new DossierMutation(
+        var mutationData = new CalculationMutation(
             "b4444444-4444-4444-4444-444444444444",
             "add_policy",
             "DOSSIER",
@@ -97,7 +97,7 @@ public class AddPolicyMutationTests
             }
         );
         var situation = new Situation(dossier);
-        var mutationData = new DossierMutation(
+        var mutationData = new CalculationMutation(
             "b5555555-5555-5555-5555-555555555555",
             "add_policy",
             "DOSSIER",

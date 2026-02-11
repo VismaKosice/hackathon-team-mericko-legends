@@ -27,7 +27,7 @@ public class ApplyIndexationMutationTests
             }
         );
         var situation = new Situation(dossier);
-        var mutationData = new DossierMutation(
+        var mutationData = new CalculationMutation(
             "c5555555-5555-5555-5555-555555555555",
             "apply_indexation",
             "DOSSIER",
@@ -66,7 +66,7 @@ public class ApplyIndexationMutationTests
             }
         );
         var situation = new Situation(dossier);
-        var mutationData = new DossierMutation(
+        var mutationData = new CalculationMutation(
             "c5555555-5555-5555-5555-555555555555",
             "apply_indexation",
             "DOSSIER",
@@ -106,7 +106,7 @@ public class ApplyIndexationMutationTests
             }
         );
         var situation = new Situation(dossier);
-        var mutationData = new DossierMutation(
+        var mutationData = new CalculationMutation(
             "c5555555-5555-5555-5555-555555555555",
             "apply_indexation",
             "DOSSIER",
@@ -145,7 +145,7 @@ public class ApplyIndexationMutationTests
             }
         );
         var situation = new Situation(dossier);
-        var mutationData = new DossierMutation(
+        var mutationData = new CalculationMutation(
             "c5555555-5555-5555-5555-555555555555",
             "apply_indexation",
             "DOSSIER",
