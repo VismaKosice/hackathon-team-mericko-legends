@@ -28,7 +28,7 @@ app.MapGet("/health/ready", () => Results.Text("ready"))
     .WithName("ReadinessCheck");
 
 // Main calculation endpoint
-app.MapPost("/calculation-requests", (CalculationRequest request, CalculationEngine calculationEngine) =>
+app.MapPost("/api/calculation-requests", (CalculationRequest request, CalculationEngine calculationEngine) =>
 {
     try
     {
