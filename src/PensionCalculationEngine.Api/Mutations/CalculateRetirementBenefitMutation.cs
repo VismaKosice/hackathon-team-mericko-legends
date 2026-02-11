@@ -1,6 +1,6 @@
-using System.Text.Json;
 using PensionCalculationEngine.Api.Domain;
 using PensionCalculationEngine.Api.Models;
+using PensionCalculationEngine.Api.Services;
 
 namespace PensionCalculationEngine.Api.Mutations;
 
@@ -29,7 +29,7 @@ public sealed class CalculateRetirementBenefitMutation : IMutation
         }
 
         var props = mutation.MutationProperties;
-        var retirementDate = GetDate(props, "retirement_date");
+        var retirementDate = PropertyExtractor.GetDate(props, "retirement_date");
 
         // Get participant birth date - use indexer for better performance
         var participant = situation.Dossier.Persons[0]; // First person is participant
@@ -114,16 +114,5 @@ public sealed class CalculateRetirementBenefitMutation : IMutation
 
         var days = endDate.DayNumber - startDate.DayNumber;
         return Math.Max(0, days / 365.25m);
-    }
-
-    private static DateOnly GetDate(Dictionary<string, object> props, string key)
-    {
-        if (props.TryGetValue(key, out var value))
-        {
-            if (value is JsonElement jsonElement) return DateOnly.Parse(jsonElement.GetString()!);
-            if (value is string str) return DateOnly.Parse(str);
-            if (value is DateOnly date) return date;
-        }
-        return DateOnly.MinValue;
     }
 }

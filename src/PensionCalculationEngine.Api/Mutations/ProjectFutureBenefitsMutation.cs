@@ -1,6 +1,6 @@
-using System.Text.Json;
 using PensionCalculationEngine.Api.Domain;
 using PensionCalculationEngine.Api.Models;
+using PensionCalculationEngine.Api.Services;
 
 namespace PensionCalculationEngine.Api.Mutations;
 
@@ -29,9 +29,9 @@ public sealed class ProjectFutureBenefitsMutation : IMutation
         }
 
         var props = mutation.MutationProperties;
-        var projectionStartDate = GetDate(props, "projection_start_date");
-        var projectionEndDate = GetDate(props, "projection_end_date");
-        var intervalMonths = GetInt(props, "projection_interval_months");
+        var projectionStartDate = PropertyExtractor.GetDate(props, "projection_start_date");
+        var projectionEndDate = PropertyExtractor.GetDate(props, "projection_end_date");
+        var intervalMonths = PropertyExtractor.GetInt(props, "projection_interval_months");
 
         // Generate projection dates
         var projectionDates = new List<DateOnly>();
@@ -115,28 +115,5 @@ public sealed class ProjectFutureBenefitsMutation : IMutation
 
         var days = endDate.DayNumber - startDate.DayNumber;
         return Math.Max(0, days / 365.25m);
-    }
-
-    private static DateOnly GetDate(Dictionary<string, object> props, string key)
-    {
-        if (props.TryGetValue(key, out var value))
-        {
-            if (value is JsonElement jsonElement) return DateOnly.Parse(jsonElement.GetString()!);
-            if (value is string str) return DateOnly.Parse(str);
-            if (value is DateOnly date) return date;
-        }
-        return DateOnly.MinValue;
-    }
-
-    private static int GetInt(Dictionary<string, object> props, string key)
-    {
-        if (props.TryGetValue(key, out var value))
-        {
-            if (value is JsonElement jsonElement) return jsonElement.GetInt32();
-            if (value is int intValue) return intValue;
-            if (value is long longValue) return (int)longValue;
-            if (value is string str && int.TryParse(str, out var parsed)) return parsed;
-        }
-        return 0;
     }
 }

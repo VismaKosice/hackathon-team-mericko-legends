@@ -1,6 +1,6 @@
-using System.Text.Json;
 using PensionCalculationEngine.Api.Domain;
 using PensionCalculationEngine.Api.Models;
+using PensionCalculationEngine.Api.Services;
 
 namespace PensionCalculationEngine.Api.Mutations;
 
@@ -21,11 +21,11 @@ public sealed class AddPolicyMutation : IMutation
 
         var props = mutation.MutationProperties;
         
-        // Extract properties
-        var schemeId = GetString(props, "scheme_id");
-        var employmentStartDate = GetDate(props, "employment_start_date");
-        var salary = GetDecimal(props, "salary");
-        var partTimeFactor = GetDecimal(props, "part_time_factor");
+        // Extract properties using optimized extractor
+        var schemeId = PropertyExtractor.GetString(props, "scheme_id");
+        var employmentStartDate = PropertyExtractor.GetDate(props, "employment_start_date");
+        var salary = PropertyExtractor.GetDecimal(props, "salary");
+        var partTimeFactor = PropertyExtractor.GetDecimal(props, "part_time_factor");
 
         // Validation: Invalid salary
         if (salary < 0)
@@ -82,39 +82,5 @@ public sealed class AddPolicyMutation : IMutation
         var updatedSituation = new Situation(updatedDossier);
 
         return new MutationResult(updatedSituation, messages);
-    }
-
-    private static string GetString(Dictionary<string, object> props, string key)
-    {
-        if (props.TryGetValue(key, out var value))
-        {
-            if (value is JsonElement jsonElement) return jsonElement.GetString() ?? string.Empty;
-            return value?.ToString() ?? string.Empty;
-        }
-        return string.Empty;
-    }
-
-    private static DateOnly GetDate(Dictionary<string, object> props, string key)
-    {
-        if (props.TryGetValue(key, out var value))
-        {
-            if (value is JsonElement jsonElement) return DateOnly.Parse(jsonElement.GetString()!);
-            if (value is string str) return DateOnly.Parse(str);
-            if (value is DateOnly date) return date;
-        }
-        return DateOnly.MinValue;
-    }
-
-    private static decimal GetDecimal(Dictionary<string, object> props, string key)
-    {
-        if (props.TryGetValue(key, out var value))
-        {
-            if (value is JsonElement jsonElement) return jsonElement.GetDecimal();
-            if (value is decimal d) return d;
-            if (value is double dbl) return (decimal)dbl;
-            if (value is int i) return i;
-            if (value is long l) return l;
-        }
-        return 0;
     }
 }

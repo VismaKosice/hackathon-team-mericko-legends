@@ -1,6 +1,6 @@
-using System.Text.Json;
 using PensionCalculationEngine.Api.Domain;
 using PensionCalculationEngine.Api.Models;
+using PensionCalculationEngine.Api.Services;
 
 namespace PensionCalculationEngine.Api.Mutations;
 
@@ -28,36 +28,30 @@ public sealed class ApplyIndexationMutation : IMutation
 
         var props = mutation.MutationProperties;
         
-        // Extract properties
-        var percentage = GetDecimal(props, "percentage");
-        var schemeIdFilter = props.TryGetValue("scheme_id", out var sid) ? GetString(props, "scheme_id") : null;
-        var effectiveBeforeFilter = props.TryGetValue("effective_before", out var eb) ? GetDate(props, "effective_before") : (DateOnly?)null;
+        // Extract properties using optimized extractor
+        var percentage = PropertyExtractor.GetDecimal(props, "percentage");
+        var schemeIdFilter = PropertyExtractor.TryGetString(props, "scheme_id", out var sid) ? sid : null;
+        var effectiveBeforeFilter = PropertyExtractor.TryGetDate(props, "effective_before", out var eb) ? eb : (DateOnly?)null;
 
-        // Filter policies
-        var matchingPolicies = situation.Dossier.Policies.Where(p =>
-        {
-            if (schemeIdFilter is not null && p.SchemeId != schemeIdFilter)
-                return false;
-            if (effectiveBeforeFilter is not null && p.EmploymentStartDate >= effectiveBeforeFilter.Value)
-                return false;
-            return true;
-        }).ToList();
-
-        // Validation: No matching policies
-        if (matchingPolicies.Count == 0 && (schemeIdFilter is not null || effectiveBeforeFilter is not null))
-        {
-            messages.Add(new CalculationMessage(0, MessageLevel.Warning, "NO_MATCHING_POLICIES", 
-                "Filters were provided but no policies match the criteria"));
-        }
-
-        // Apply indexation
-        var updatedPolicies = new List<Policy>(situation.Dossier.Policies.Count);
+        // Filter policies - optimized with direct indexing
+        var policies = situation.Dossier.Policies;
+        var matchingCount = 0;
         var hasNegativeSalary = false;
+        var updatedPolicies = new List<Policy>(capacity: policies.Count);
 
-        foreach (var policy in situation.Dossier.Policies)
+        for (int i = 0; i < policies.Count; i++)
         {
-            if (matchingPolicies.Contains(policy))
+            var policy = policies[i];
+            var matches = true;
+            
+            if (schemeIdFilter is not null && policy.SchemeId != schemeIdFilter)
+                matches = false;
+            if (effectiveBeforeFilter is not null && policy.EmploymentStartDate >= effectiveBeforeFilter.Value)
+                matches = false;
+
+            if (matches)
             {
+                matchingCount++;
                 var newSalary = policy.Salary * (1 + percentage);
                 if (newSalary < 0)
                 {
@@ -72,6 +66,13 @@ public sealed class ApplyIndexationMutation : IMutation
             }
         }
 
+        // Validation: No matching policies
+        if (matchingCount == 0 && (schemeIdFilter is not null || effectiveBeforeFilter is not null))
+        {
+            messages.Add(new CalculationMessage(0, MessageLevel.Warning, "NO_MATCHING_POLICIES", 
+                "Filters were provided but no policies match the criteria"));
+        }
+
         if (hasNegativeSalary)
         {
             messages.Add(new CalculationMessage(0, MessageLevel.Warning, "NEGATIVE_SALARY_CLAMPED", 
@@ -83,39 +84,5 @@ public sealed class ApplyIndexationMutation : IMutation
         var updatedSituation = new Situation(updatedDossier);
 
         return new MutationResult(updatedSituation, messages);
-    }
-
-    private static string GetString(Dictionary<string, object> props, string key)
-    {
-        if (props.TryGetValue(key, out var value))
-        {
-            if (value is JsonElement jsonElement) return jsonElement.GetString() ?? string.Empty;
-            return value?.ToString() ?? string.Empty;
-        }
-        return string.Empty;
-    }
-
-    private static DateOnly GetDate(Dictionary<string, object> props, string key)
-    {
-        if (props.TryGetValue(key, out var value))
-        {
-            if (value is JsonElement jsonElement) return DateOnly.Parse(jsonElement.GetString()!);
-            if (value is string str) return DateOnly.Parse(str);
-            if (value is DateOnly date) return date;
-        }
-        return DateOnly.MinValue;
-    }
-
-    private static decimal GetDecimal(Dictionary<string, object> props, string key)
-    {
-        if (props.TryGetValue(key, out var value))
-        {
-            if (value is JsonElement jsonElement) return jsonElement.GetDecimal();
-            if (value is decimal d) return d;
-            if (value is double dbl) return (decimal)dbl;
-            if (value is int i) return i;
-            if (value is long l) return l;
-        }
-        return 0;
     }
 }

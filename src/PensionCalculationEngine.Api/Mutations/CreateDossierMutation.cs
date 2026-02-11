@@ -1,6 +1,6 @@
-using System.Text.Json;
 using PensionCalculationEngine.Api.Domain;
 using PensionCalculationEngine.Api.Models;
+using PensionCalculationEngine.Api.Services;
 
 namespace PensionCalculationEngine.Api.Mutations;
 
@@ -21,11 +21,11 @@ public sealed class CreateDossierMutation : IMutation
 
         var props = mutation.MutationProperties;
         
-        // Extract properties
-        var dossierId = GetString(props, "dossier_id");
-        var personId = GetString(props, "person_id");
-        var name = GetString(props, "name");
-        var birthDate = GetDate(props, "birth_date");
+        // Extract properties using optimized extractor
+        var dossierId = PropertyExtractor.GetString(props, "dossier_id");
+        var personId = PropertyExtractor.GetString(props, "person_id");
+        var name = PropertyExtractor.GetString(props, "name");
+        var birthDate = PropertyExtractor.GetDate(props, "birth_date");
 
         // Validation: Empty name
         if (string.IsNullOrWhiteSpace(name))
@@ -53,33 +53,5 @@ public sealed class CreateDossierMutation : IMutation
 
         var updatedSituation = new Situation(dossier);
         return new MutationResult(updatedSituation, messages);
-    }
-
-    private static string GetString(Dictionary<string, object> props, string key)
-    {
-        if (!props.TryGetValue(key, out var value)) return string.Empty;
-        if (value is JsonElement jsonElement)
-        {
-            return jsonElement.GetString() ?? string.Empty;
-        }
-        return value?.ToString() ?? string.Empty;
-    }
-
-    private static DateOnly GetDate(Dictionary<string, object> props, string key)
-    {
-        if (!props.TryGetValue(key, out var value)) return DateOnly.MinValue;
-        if (value is JsonElement jsonElement)
-        {
-            return DateOnly.Parse(jsonElement.GetString()!);
-        }
-        if (value is string str)
-        {
-            return DateOnly.Parse(str);
-        }
-        if (value is DateOnly date)
-        {
-            return date;
-        }
-        return DateOnly.MinValue;
     }
 }
