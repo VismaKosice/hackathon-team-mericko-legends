@@ -5,18 +5,33 @@ using PensionCalculationEngine.Api.Services;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
+// Configure Kestrel for high throughput
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxConcurrentConnections = 1000;
+    options.Limits.MaxConcurrentUpgradedConnections = 1000;
+    options.Limits.MaxRequestBodySize = 10 * 1024 * 1024; // 10MB
+    options.AddServerHeader = false;
+});
+
 // Configure JSON options for optimal performance
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
-    // Removed TypeInfoResolver to allow reflection-based serialization for all types
-    // options.SerializerOptions.TypeInfoResolver = AppJsonSerializerContext.Default;
+    // Keep reflection for complex types
 });
 
 // Register services as singletons for better performance
 builder.Services.AddSingleton<MutationRegistry>();
-builder.Services.AddSingleton<JsonPatchGenerator>();
+
+// Enable JSON Patch generation via environment variable or by default
+var enableJsonPatch = Environment.GetEnvironmentVariable("ENABLE_JSON_PATCH")?.ToLower() != "false";
+if (enableJsonPatch)
+{
+    builder.Services.AddSingleton<JsonPatchGenerator>();
+}
+
 builder.Services.AddSingleton<CalculationEngine>();
 
 var app = builder.Build();

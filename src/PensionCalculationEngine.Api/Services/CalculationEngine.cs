@@ -8,12 +8,15 @@ namespace PensionCalculationEngine.Api.Services;
 public sealed class CalculationEngine
 {
     private readonly MutationRegistry _mutationRegistry;
-    private readonly JsonPatchGenerator _patchGenerator;
+    private readonly JsonPatchGenerator? _patchGenerator;
+    private readonly bool _generatePatches;
 
-    public CalculationEngine(MutationRegistry mutationRegistry, JsonPatchGenerator patchGenerator)
+    public CalculationEngine(MutationRegistry mutationRegistry, JsonPatchGenerator? patchGenerator = null)
     {
         _mutationRegistry = mutationRegistry;
         _patchGenerator = patchGenerator;
+        // Only generate patches if explicitly enabled via environment variable or if generator provided
+        _generatePatches = Environment.GetEnvironmentVariable("ENABLE_JSON_PATCH")?.ToLower() == "true" || patchGenerator != null;
     }
 
     public CalculationResponse ProcessCalculationRequest(CalculationRequest request)
@@ -59,8 +62,8 @@ public sealed class CalculationEngine
                 break;
             }
 
-            // Store previous situation for patch generation
-            var previousSituation = currentSituation;
+            // Store previous situation for patch generation (only if needed)
+            var previousSituation = _generatePatches ? currentSituation : null;
             var result = mutationHandler.Execute(currentSituation, mutation);
             
             // Assign message IDs and track indexes
@@ -94,9 +97,13 @@ public sealed class CalculationEngine
             // Update situation for successful mutation
             currentSituation = result.UpdatedSituation;
             
-            // Generate forward patch
-            var forwardPatch = _patchGenerator.GeneratePatch(previousSituation, currentSituation);
-            var patchOperations = forwardPatch.Cast<object>().ToList();
+            // Generate forward patch only if enabled
+            List<object>? patchOperations = null;
+            if (_generatePatches && _patchGenerator != null && previousSituation != null)
+            {
+                var forwardPatch = _patchGenerator.GeneratePatch(previousSituation, currentSituation);
+                patchOperations = forwardPatch.Cast<object>().ToList();
+            }
             
             processedMutations.Add(new ProcessedMutation(mutation, messageIndexes, patchOperations));
             
