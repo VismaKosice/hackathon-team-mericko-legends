@@ -33,13 +33,14 @@ public sealed class ApplyIndexationMutation : IMutation
         var schemeIdFilter = PropertyExtractor.TryGetString(props, "scheme_id", out var sid) ? sid : null;
         var effectiveBeforeFilter = PropertyExtractor.TryGetDate(props, "effective_before", out var eb) ? eb : (DateOnly?)null;
 
-        // Filter policies - optimized with direct indexing
+        // Filter policies - optimized with direct indexing and single pass
         var policies = situation.Dossier.Policies;
+        var policyCount = policies.Count;
         var matchingCount = 0;
         var hasNegativeSalary = false;
-        var updatedPolicies = new List<Policy>(capacity: policies.Count);
+        var updatedPolicies = new List<Policy>(capacity: policyCount);
 
-        for (int i = 0; i < policies.Count; i++)
+        for (int i = 0; i < policyCount; i++)
         {
             var policy = policies[i];
             var matches = true;

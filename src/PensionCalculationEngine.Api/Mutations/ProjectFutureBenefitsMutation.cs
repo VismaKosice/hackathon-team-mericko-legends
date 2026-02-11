@@ -62,7 +62,7 @@ public sealed class ProjectFutureBenefitsMutation : IMutation
             for (int i = 0; i < policyCount; i++)
             {
                 var policy = situation.Dossier.Policies[i];
-                var years = CalculateYearsOfService(policy.EmploymentStartDate, projectionDate);
+                var years = CalculationCache.CalculateYearsOfService(policy.EmploymentStartDate, projectionDate);
                 policyYears[i] = years;
                 totalYears += years;
             }
@@ -106,14 +106,5 @@ public sealed class ProjectFutureBenefitsMutation : IMutation
 
         var updatedSituation = new Situation(updatedDossier);
         return new MutationResult(updatedSituation, messages);
-    }
-
-    private static decimal CalculateYearsOfService(DateOnly startDate, DateOnly endDate)
-    {
-        if (endDate < startDate)
-            return 0;
-
-        var days = endDate.DayNumber - startDate.DayNumber;
-        return Math.Max(0, days / 365.25m);
     }
 }

@@ -33,7 +33,7 @@ public sealed class CalculateRetirementBenefitMutation : IMutation
 
         // Get participant birth date - use indexer for better performance
         var participant = situation.Dossier.Persons[0]; // First person is participant
-        var age = CalculateAge(participant.BirthDate, retirementDate);
+        var age = CalculationCache.CalculateAge(participant.BirthDate, retirementDate);
 
         // Calculate total years of service
         var policyCount = situation.Dossier.Policies.Count;
@@ -43,7 +43,7 @@ public sealed class CalculateRetirementBenefitMutation : IMutation
         for (int i = 0; i < policyCount; i++)
         {
             var policy = situation.Dossier.Policies[i];
-            var years = CalculateYearsOfService(policy.EmploymentStartDate, retirementDate);
+            var years = CalculationCache.CalculateYearsOfService(policy.EmploymentStartDate, retirementDate);
             
             if (retirementDate < policy.EmploymentStartDate)
             {
@@ -97,22 +97,5 @@ public sealed class CalculateRetirementBenefitMutation : IMutation
 
         var updatedSituation = new Situation(updatedDossier);
         return new MutationResult(updatedSituation, messages);
-    }
-
-    private static int CalculateAge(DateOnly birthDate, DateOnly referenceDate)
-    {
-        var age = referenceDate.Year - birthDate.Year;
-        if (referenceDate < birthDate.AddYears(age))
-            age--;
-        return age;
-    }
-
-    private static decimal CalculateYearsOfService(DateOnly startDate, DateOnly endDate)
-    {
-        if (endDate < startDate)
-            return 0;
-
-        var days = endDate.DayNumber - startDate.DayNumber;
-        return Math.Max(0, days / 365.25m);
     }
 }

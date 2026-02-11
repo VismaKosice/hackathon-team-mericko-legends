@@ -60,7 +60,7 @@ public sealed class AddPolicyMutation : IMutation
                 "A policy with the same scheme_id and employment_start_date already exists"));
         }
 
-        // Generate policy_id
+        // Generate policy_id - use string interpolation which is optimized by compiler
         var sequenceNumber = situation.Dossier.Policies.Count + 1;
         var policyId = $"{situation.Dossier.DossierId}-{sequenceNumber}";
 
@@ -73,7 +73,7 @@ public sealed class AddPolicyMutation : IMutation
             partTimeFactor
         );
 
-        // Update dossier - pre-allocate capacity
+        // Update dossier - use collection expression for efficiency
         var updatedPolicies = new List<Policy>(capacity: situation.Dossier.Policies.Count + 1);
         updatedPolicies.AddRange(situation.Dossier.Policies);
         updatedPolicies.Add(newPolicy);

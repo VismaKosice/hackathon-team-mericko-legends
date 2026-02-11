@@ -21,18 +21,21 @@ public sealed class CalculationEngine
 
     public CalculationResponse ProcessCalculationRequest(CalculationRequest request)
     {
+        var now = DateTime.UtcNow; // Cache to avoid multiple calls
         var calculationId = Guid.NewGuid().ToString();
-        var startTime = DateTime.UtcNow;
+        var startTime = now;
         var stopwatch = Stopwatch.StartNew();
 
         // Pre-allocate with expected capacity for better performance
-        var mutationCount = request.CalculationInstructions.Mutations.Count;
+        var mutations = request.CalculationInstructions.Mutations;
+        var mutationCount = mutations.Count;
         var allMessages = new List<CalculationMessage>(capacity: mutationCount * 2); // Assume avg 2 messages per mutation
         var processedMutations = new List<ProcessedMutation>(capacity: mutationCount);
         var currentSituation = new Situation(null);
-        var outcome = "SUCCESS";
+        var outcome = StringPool.Success;
 
-        var firstMutationDate = request.CalculationInstructions.Mutations.FirstOrDefault()?.ActualAt ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        // Avoid LINQ FirstOrDefault - direct array access
+        var firstMutationDate = mutationCount > 0 ? mutations[0].ActualAt : DateOnly.FromDateTime(now);
         var initialSituation = new SituationSnapshot(
             null,
             null,
@@ -43,10 +46,11 @@ public sealed class CalculationEngine
         string? lastSuccessfulMutationId = null;
         int lastSuccessfulMutationIndex = -1;
         DateOnly lastSuccessfulActualAt = firstMutationDate;
-        var mutationIndex = 0;
 
-        foreach (var mutation in request.CalculationInstructions.Mutations)
+        // Use for loop instead of foreach to avoid enumerator allocation
+        for (int mutationIndex = 0; mutationIndex < mutationCount; mutationIndex++)
         {
+            var mutation = mutations[mutationIndex];
             var mutationHandler = _mutationRegistry.GetMutation(mutation.MutationDefinitionName);
             if (mutationHandler is null)
             {
@@ -58,7 +62,7 @@ public sealed class CalculationEngine
                 );
                 allMessages.Add(errorMsg);
                 processedMutations.Add(new ProcessedMutation(mutation, [allMessages.Count - 1], null));
-                outcome = "FAILURE";
+                outcome = StringPool.Failure;
                 break;
             }
 
@@ -88,7 +92,7 @@ public sealed class CalculationEngine
             
             if (hasCritical)
             {
-                outcome = "FAILURE";
+                outcome = StringPool.Failure;
                 // Don't update currentSituation for failed mutation, no patch needed
                 processedMutations.Add(new ProcessedMutation(mutation, messageIndexes, null));
                 break;
@@ -110,15 +114,14 @@ public sealed class CalculationEngine
             lastSuccessfulMutationId = mutation.MutationId;
             lastSuccessfulMutationIndex = mutationIndex;
             lastSuccessfulActualAt = mutation.ActualAt;
-            mutationIndex++;
         }
 
         stopwatch.Stop();
         var endTime = DateTime.UtcNow;
 
-        // Create end situation
+        // Create end situation - avoid LINQ
         var endSituation = new SituationSnapshot(
-            lastSuccessfulMutationId ?? request.CalculationInstructions.Mutations.First().MutationId,
+            lastSuccessfulMutationId ?? mutations[0].MutationId,
             lastSuccessfulMutationIndex >= 0 ? lastSuccessfulMutationIndex : 0,
             lastSuccessfulActualAt,
             currentSituation
