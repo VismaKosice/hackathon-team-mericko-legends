@@ -2,14 +2,14 @@
 Write-Host "=== Pension Calculation Engine - Latency Test ===" -ForegroundColor Cyan
 Write-Host ""
 
-$url = "http://localhost:8081/calculation-requests"
+$url = "http://localhost:8080/calculation-requests"
 $testRequestPath = "C:\Temp\FBB\Hackaton2026\hackathon-team-mericko-legends\test-request.json"
 $body = Get-Content $testRequestPath -Raw
 
 # Test 1: Cold Start (First Request)
 Write-Host "Test 1: Cold Start (First Request)" -ForegroundColor Yellow
 $coldStart = Measure-Command {
-    $response = Invoke-WebRequest -Uri $url -Method POST -Body $body -ContentType "application/json" -ErrorAction Stop
+    $response = Invoke-WebRequest -Uri $url -Method POST -Body $body -ContentType "application/json" -UseBasicParsing -ErrorAction Stop
 }
 Write-Host "  Latency: $($coldStart.TotalMilliseconds) ms" -ForegroundColor Green
 Write-Host "  Status: $($response.StatusCode)" -ForegroundColor Green
@@ -20,7 +20,7 @@ Write-Host "Test 2: Warm Requests (10 sequential requests)" -ForegroundColor Yel
 $warmLatencies = @()
 for ($i = 1; $i -le 10; $i++) {
     $time = Measure-Command {
-        $response = Invoke-WebRequest -Uri $url -Method POST -Body $body -ContentType "application/json" -ErrorAction Stop
+        $response = Invoke-WebRequest -Uri $url -Method POST -Body $body -ContentType "application/json" -UseBasicParsing -ErrorAction Stop
     }
     $warmLatencies += $time.TotalMilliseconds
     Write-Host "  Request $i`: $($time.TotalMilliseconds) ms"
@@ -46,7 +46,7 @@ for ($i = 1; $i -le 5; $i++) {
     $jobs += Start-Job -ScriptBlock {
         param($url, $body)
         $time = Measure-Command {
-            $response = Invoke-WebRequest -Uri $url -Method POST -Body $body -ContentType "application/json" -ErrorAction Stop
+            $response = Invoke-WebRequest -Uri $url -Method POST -Body $body -ContentType "application/json" -UseBasicParsing -ErrorAction Stop
         }
         return $time.TotalMilliseconds
     } -ArgumentList $url, $body
@@ -70,7 +70,7 @@ $throughputStart = Get-Date
 $throughputLatencies = @()
 for ($i = 1; $i -le 50; $i++) {
     $time = Measure-Command {
-        $response = Invoke-WebRequest -Uri $url -Method POST -Body $body -ContentType "application/json" -ErrorAction Stop
+        $response = Invoke-WebRequest -Uri $url -Method POST -Body $body -ContentType "application/json" -UseBasicParsing -ErrorAction Stop
     }
     $throughputLatencies += $time.TotalMilliseconds
 }

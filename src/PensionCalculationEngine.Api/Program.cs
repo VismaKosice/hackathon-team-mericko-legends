@@ -143,7 +143,7 @@ app.Run($"http://0.0.0.0:{port}");
     PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower,
     DefaultIgnoreCondition = JsonIgnoreCondition.Never,
     WriteIndented = false,
-    GenerationMode = JsonSourceGenerationMode.Serialization
+    GenerationMode = JsonSourceGenerationMode.Default
 )]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
