@@ -9,7 +9,7 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
-    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
     // Removed TypeInfoResolver to allow reflection-based serialization for all types
     // options.SerializerOptions.TypeInfoResolver = AppJsonSerializerContext.Default;
 });
@@ -28,7 +28,7 @@ app.MapGet("/health/ready", () => Results.Text("ready"))
     .WithName("ReadinessCheck");
 
 // Main calculation endpoint
-app.MapPost("/api/calculation-requests", (CalculationRequest request, CalculationEngine calculationEngine) =>
+app.MapPost("/calculation-requests", (CalculationRequest request, CalculationEngine calculationEngine) =>
 {
     try
     {
@@ -58,7 +58,7 @@ app.Run($"http://0.0.0.0:{port}");
 [JsonSerializable(typeof(ErrorResponse))]
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    DefaultIgnoreCondition = JsonIgnoreCondition.Never,
     WriteIndented = false
 )]
 internal partial class AppJsonSerializerContext : JsonSerializerContext

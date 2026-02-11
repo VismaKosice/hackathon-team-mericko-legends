@@ -16,7 +16,8 @@ public sealed class MutationRegistry
             ["create_dossier"] = new CreateDossierMutation(),
             ["add_policy"] = new AddPolicyMutation(),
             ["apply_indexation"] = new ApplyIndexationMutation(),
-            ["calculate_retirement_benefit"] = new CalculateRetirementBenefitMutation()
+            ["calculate_retirement_benefit"] = new CalculateRetirementBenefitMutation(),
+            ["project_future_benefits"] = new ProjectFutureBenefitsMutation()
         }.ToFrozenDictionary(StringComparer.Ordinal);
     }
 
