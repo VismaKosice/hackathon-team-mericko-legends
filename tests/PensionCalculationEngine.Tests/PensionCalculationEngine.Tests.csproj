@@ -20,4 +20,10 @@
     <ProjectReference Include="..\..\src\PensionCalculationEngine.Api\PensionCalculationEngine.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestData\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
