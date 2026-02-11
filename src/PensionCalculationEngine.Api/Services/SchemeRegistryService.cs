@@ -57,7 +57,7 @@ public sealed class SchemeRegistryService : ISchemeRegistryService
         }
         catch (Exception)
         {
-            // Fall back to default on any error (timeout, network, etc.)
+            // Fall back to default on any error
         }
 
         return DefaultAccrualRate;
