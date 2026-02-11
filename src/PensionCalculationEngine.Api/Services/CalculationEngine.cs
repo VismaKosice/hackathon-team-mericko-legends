@@ -8,10 +8,12 @@ namespace PensionCalculationEngine.Api.Services;
 public sealed class CalculationEngine
 {
     private readonly MutationRegistry _mutationRegistry;
+    private readonly JsonPatchGenerator _patchGenerator;
 
-    public CalculationEngine(MutationRegistry mutationRegistry)
+    public CalculationEngine(MutationRegistry mutationRegistry, JsonPatchGenerator patchGenerator)
     {
         _mutationRegistry = mutationRegistry;
+        _patchGenerator = patchGenerator;
     }
 
     public CalculationResponse ProcessCalculationRequest(CalculationRequest request)
@@ -52,11 +54,13 @@ public sealed class CalculationEngine
                     $"Unknown mutation: {mutation.MutationDefinitionName}"
                 );
                 allMessages.Add(errorMsg);
-                processedMutations.Add(new ProcessedMutation(mutation, [allMessages.Count - 1]));
+                processedMutations.Add(new ProcessedMutation(mutation, [allMessages.Count - 1], null));
                 outcome = "FAILURE";
                 break;
             }
 
+            // Store previous situation for patch generation
+            var previousSituation = currentSituation;
             var result = mutationHandler.Execute(currentSituation, mutation);
             
             // Assign message IDs and track indexes
@@ -67,8 +71,6 @@ public sealed class CalculationEngine
                 allMessages.Add(msg with { Id = messageId });
                 messageIndexes.Add(messageId);
             }
-
-            processedMutations.Add(new ProcessedMutation(mutation, messageIndexes));
 
             // Check for CRITICAL messages - use for loop for better performance
             var hasCritical = false;
@@ -84,12 +86,20 @@ public sealed class CalculationEngine
             if (hasCritical)
             {
                 outcome = "FAILURE";
-                // Don't update currentSituation for failed mutation
+                // Don't update currentSituation for failed mutation, no patch needed
+                processedMutations.Add(new ProcessedMutation(mutation, messageIndexes, null));
                 break;
             }
 
             // Update situation for successful mutation
             currentSituation = result.UpdatedSituation;
+            
+            // Generate forward patch
+            var forwardPatch = _patchGenerator.GeneratePatch(previousSituation, currentSituation);
+            var patchOperations = forwardPatch.Cast<object>().ToList();
+            
+            processedMutations.Add(new ProcessedMutation(mutation, messageIndexes, patchOperations));
+            
             lastSuccessfulMutationId = mutation.MutationId;
             lastSuccessfulMutationIndex = mutationIndex;
             lastSuccessfulActualAt = mutation.ActualAt;

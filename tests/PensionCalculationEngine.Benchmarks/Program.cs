@@ -25,7 +25,8 @@ public class CalculationBenchmarks
     public void Setup()
     {
         var registry = new MutationRegistry();
-        _engine = new CalculationEngine(registry);
+        var patchGenerator = new JsonPatchGenerator();
+        _engine = new CalculationEngine(registry, patchGenerator);
 
         // Simple request: create dossier + add policy + indexation
         _simpleRequest = new CalculationRequest(

@@ -16,6 +16,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 // Register services as singletons for better performance
 builder.Services.AddSingleton<MutationRegistry>();
+builder.Services.AddSingleton<JsonPatchGenerator>();
 builder.Services.AddSingleton<CalculationEngine>();
 
 var app = builder.Build();

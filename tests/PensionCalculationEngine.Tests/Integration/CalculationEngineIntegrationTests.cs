@@ -12,7 +12,8 @@ public class CalculationEngineIntegrationTests
     public CalculationEngineIntegrationTests()
     {
         var registry = new MutationRegistry();
-        _engine = new CalculationEngine(registry);
+        var patchGenerator = new JsonPatchGenerator();
+        _engine = new CalculationEngine(registry, patchGenerator);
     }
 
     [Fact]
